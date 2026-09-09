@@ -96,9 +96,7 @@ The default movement takes 600 ms, followed by a 1.2-second hold. Tiny horizonta
 updates (up to 0.2 pixels) during that hold keep events flowing so xochitl can
 recognize it. Movement toward the endpoint uses straight interpolation with no
 jitter. Use a drawing tool that supports snapping; verified with the fineliner.
-The faster default was checked against the previous 2.4-second hold on this
-tablet; see [timing measurements](docs/line-timing.md). Use `--hold 2400ms` to
-restore the previous timing. There is no event-level acknowledgement that snapping occurred, and the command
+There is no event-level acknowledgement that snapping occurred, and the command
 does not select a tool automatically. `--duration` accepts 1 ms to 4 seconds and
 `--hold` accepts 800 ms to 5 seconds; a shorter hold may not trigger snapping.
 
@@ -122,12 +120,11 @@ time by segment length for approximately constant speed, rounding timestamps
 to milliseconds. Fractional milliseconds in the duration are truncated. If points
 are too close together to receive distinct timestamps, increase the duration or
 use fewer points. `--pressure` applies to the whole stroke, defaults to 0.5,
-and must be greater than 0 and at most 1. No JSON file or per-point timing is needed;
-`stroke --file` has been removed.
+and must be greater than 0 and at most 1. No JSON file or per-point timing is needed.
 
-Movement interpolates every 2 ms (approximately 500 updates/second), based on
-[device sampling tests](docs/stroke-sampling.md), retaining the supplied corners
-and endpoints. `line` retains its tested 8 ms sampling and 1.2-second snap hold.
+Movement interpolates every 2 ms (approximately 500 updates/second), retaining
+the supplied corners and endpoints. `line` uses 8 ms sampling and a 1.2-second
+snap hold.
 Choose `line` for geometric edges and `stroke` for continuous paths. Both use
 the same locking, coordinate mapping, validation, and release handling.
 
@@ -194,15 +191,14 @@ zoom factor in every UI context.
 Pressure is scaled to the pen's reported range (0–4096 on the tested tablet).
 The selected drawing tool determines its appearance and whether pressure has an
 effect. The CLI constructs the timed gesture internally and sends it to the
-helper over SSH; both client and helper validate it. The internal JSON protocol
-is unchanged, so this CLI simplification works with the existing helper.
+helper over SSH; both client and helper validate it.
 
 Before drawing, the helper sends about 100 ms of hover updates within one raw
 sensor unit of the starting position. Pen-down then includes fresh X/Y values,
 preventing the missing-start gaps observed with an immediate transition. This
 occurs before contact and does not add ink or alter the path's point timing.
-See [the endpoint debugging notes](docs/input-endpoints.md) for the event trace
-and verification.
+See [input implementation notes](docs/input-behavior.md) for the reasoning behind
+the hover sequence, sampling intervals, and snap timing.
 
 Input devices are discovered by name, and axis ranges are queried with evdev
 ioctls. The helper writes Linux input events to the existing Elan pen and touch
