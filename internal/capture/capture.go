@@ -84,19 +84,35 @@ func parseMaps(r io.Reader) ([]mapping, error) {
 // see licenses/goMarkableStream.txt. Bound every step to the anonymous mapping
 // and validate allocation sizes before reading any pixel data.
 func frameAddress(mem io.ReaderAt, maps []mapping, size int) (int64, error) {
-	last := -1
-	for n, m := range maps {
-		if m.path == "/dev/dri/card0" {
-			last = n
+	// DRM mappings can be split into several groups after a reboot. The screen
+	// allocation need not follow the last group in address order.
+	var addr int64
+	var lastErr error
+	for n := 1; n < len(maps); n++ {
+		prev, m := maps[n-1], maps[n]
+		if prev.path != "/dev/dri/card0" || m.start != prev.end || m.path != "" || m.perms != "rw-p" {
+			continue
 		}
+		candidate, err := frameAddressInMapping(mem, m, size)
+		if err != nil {
+			lastErr = err
+			continue
+		}
+		if addr != 0 {
+			return 0, fmt.Errorf("multiple matching screen allocations after DRM mappings")
+		}
+		addr = candidate
 	}
-	if last < 0 || last+1 >= len(maps) {
-		return 0, fmt.Errorf("DRM display mapping not found")
+	if addr != 0 {
+		return addr, nil
 	}
-	m := maps[last+1]
-	if m.start != maps[last].end || m.path != "" || !strings.HasPrefix(m.perms, "rw") {
-		return 0, fmt.Errorf("unexpected mapping after DRM buffers")
+	if lastErr != nil {
+		return 0, fmt.Errorf("screen allocation not found after DRM mappings: %w", lastErr)
 	}
+	return 0, fmt.Errorf("no anonymous private mapping immediately after DRM buffers")
+}
+
+func frameAddressInMapping(mem io.ReaderAt, m mapping, size int) (int64, error) {
 	for p, steps := m.start, 0; p <= m.end-16 && steps < 4096; steps++ {
 		var header [8]byte
 		if _, err := mem.ReadAt(header[:], p+8); err != nil {

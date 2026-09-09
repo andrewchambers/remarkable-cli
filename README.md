@@ -220,10 +220,11 @@ user's device with firmware **3.27.3.0**. Other models and firmware are rejected
 with an explicit error; they need separate tested capture backends. `info` can
 report a device even when its capture backend is unsupported.
 
-Capture reads xochitl's memory and requires root. It discovers the anonymous
-mapping following the DRM mappings and walks bounded mmap allocation headers
-to locate the image. It does not write process memory. Firmware changes can
-break this internal layout, including within the accepted firmware series.
+Capture reads xochitl's memory and requires root. It checks anonymous private
+mappings immediately following each group of DRM mappings and walks bounded
+mmap allocation headers to locate the image. Matches in multiple mappings are
+rejected. It does not write process memory. Firmware changes can break this
+internal layout, including within the accepted firmware series.
 The capture represents the UI buffer; it does not reproduce physical e-ink
 refresh artifacts. A screen changing during capture may produce a torn frame.
 
