@@ -8,6 +8,7 @@ Usage: remarkable-agent <command>
        remarkable-agent <command> --help
 
 Commands:
+  version     Show the helper version and Git commit (also --version).
   info        Show device information and compatibility as JSON.
   screenshot  Write the current screen as PNG bytes to stdout.
   tap         Read a finger tap JSON object from stdin and send it.
@@ -19,7 +20,7 @@ Commands:
 Usually invoked over SSH by remarkablectl. Capture and input require root and
 Tatsu ARM64 firmware 3.27.x. Input uses portrait screenshot coordinates.
 Command data goes to stdout; help and diagnostics go to stderr. Failures return
-a nonzero exit status. Help does not access hardware or read stdin.
+a nonzero exit status. Help and version do not access hardware or read stdin.
 Input commands accept one JSON object, at most 1 MiB, with no unknown fields.
 Use command --help for the payload format. CLI flag defaults are not applied
 to direct helper requests; supply the documented timing and pressure fields.
@@ -36,6 +37,14 @@ Success produces no stdout; it indicates event delivery, not a verified UI resul
 `
 
 var agentCommandHelp = map[string]string{
+	"version": `Show the helper version and Git commit to stdout.
+
+Usage: remarkable-agent version
+       remarkable-agent --version
+
+Does not access hardware, read stdin, or require root. The info command includes
+the same build identifiers as agent_version and agent_commit in its JSON output.
+`,
 	"pinch": `Spread or close two fingers around a fixed center using JSON from stdin.
 
 Usage: remarkable-agent pinch < pinch.json
@@ -70,7 +79,9 @@ two-finger zoom.
 
 Usage: remarkable-agent info
 
-Fields: protocol (currently 1), model, firmware, and architecture. The backend
+Fields: agent_version, agent_commit, protocol (currently 1), model, firmware,
+and architecture. Agent fields identify this helper build; firmware identifies
+the tablet OS. The backend
 field identifies the supported capture implementation; width and height describe
 its screen dimensions. Capture and input currently use the same device
 compatibility check. An omitted backend means these operations are unsupported;

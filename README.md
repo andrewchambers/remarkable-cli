@@ -18,6 +18,25 @@ Outputs:
 - `bin/remarkablectl`: CLI for the computer running the build.
 - `bin/remarkable-agent-linux-arm64`: static Linux ARM64 tablet helper.
 
+Builds made with `make build` embed the Git version and commit in both binaries.
+A tagged checkout reports its release tag; later commits and tracked local edits
+are identified by `git describe`. Without Git metadata, the version is `dev`.
+For a source archive, supply the release version with `make build VERSION=v0.2`.
+Plain `go build` uses `dev` and an unknown commit.
+
+Check the local CLI and the installed tablet helper separately:
+
+```sh
+./bin/remarkablectl --version
+./bin/remarkablectl --host 192.168.0.113 info
+```
+
+`info` includes `agent_version` and `agent_commit` alongside the tablet's
+`firmware` and the helper's `protocol` version. Helpers predating v0.2 omit the
+agent version fields. On the tablet, `remarkable-agent --version` reports the
+same build identifiers. Both binaries also accept the `version` subcommand;
+version reporting works without a device connection or hardware access.
+
 ## Use
 
 The tablet must already allow root SSH access using a key (directly or through
@@ -53,6 +72,21 @@ export REMARKABLE_HOST=192.168.0.113
 `--host` also accepts an SSH host alias. Other connection flags are `--user`
 (default `root`), `--port` (default `22`), and `--agent` (absolute remote path).
 The entire operation has a 30-second timeout by default.
+
+Set `REMARKABLE_HOST` and optionally `REMARKABLE_PORT` in `~/.bashrc` or your
+shell's startup file to avoid repeating connection flags. For example, with
+Tailscale forwarding port 2222 to the tablet's SSH server:
+
+```sh
+export REMARKABLE_HOST=100.100.120.14 # Replace with your tablet's Tailscale IP.
+export REMARKABLE_PORT=2222
+```
+
+Then run `./bin/remarkablectl info` or `./bin/remarkablectl screenshot`.
+Explicit `--host` and `--port` flags override the environment. An unset or empty
+`REMARKABLE_PORT` defaults to 22; other values must be integers from 1 to 65535.
+`REMARKABLE_HOST` must be supplied through the environment or `--host` for device
+operations. Help and local version reporting work without either setting.
 
 Use `remarkablectl --help` for the command overview and
 `remarkablectl <command> --help` for examples, required inputs, defaults, and
@@ -237,8 +271,9 @@ refresh artifacts. A screen changing during capture may produce a torn frame.
 - `internal/capture`: device identification, buffer discovery, and pixel decoding.
 - `internal/input`: gesture validation, interpolation, and Linux input injection.
 
-`remarkable-agent info` returns JSON including protocol version `1`, device
-identity, and available capture backend. `remarkable-agent screenshot` returns
+`remarkable-agent info` returns JSON including the helper version and Git commit,
+protocol version `1`, device identity, and available capture backend.
+`remarkable-agent screenshot` returns
 only PNG bytes. New operations can be added as helper commands over the same
 SSH transport without opening another network port.
 

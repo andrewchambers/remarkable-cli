@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"remarkable-cli/internal/buildinfo"
 	"runtime"
 	"strconv"
 	"strings"
@@ -16,6 +17,8 @@ import (
 
 type Info struct {
 	Protocol     int    `json:"protocol"`
+	AgentVersion string `json:"agent_version"`
+	AgentCommit  string `json:"agent_commit"`
 	Model        string `json:"model"`
 	Firmware     string `json:"firmware"`
 	Architecture string `json:"architecture"`
@@ -25,7 +28,7 @@ type Info struct {
 }
 
 func DeviceInfo() (Info, error) {
-	i := Info{Protocol: 1, Architecture: runtime.GOARCH}
+	i := Info{Protocol: 1, AgentVersion: buildinfo.Version, AgentCommit: buildinfo.Commit, Architecture: runtime.GOARCH}
 	model, err := os.ReadFile("/sys/devices/soc0/machine")
 	if err != nil {
 		return i, fmt.Errorf("read device model: %w", err)

@@ -11,6 +11,7 @@ const overviewHelp = `Run reMarkable operations over passwordless SSH.
 Usage: remarkablectl [connection flags] <command> [command flags]
 
 Commands:
+  version        Show the local CLI version and Git commit (also --version).
   install-agent  Install or update the tablet helper from a local binary.
   info           Show device information and compatibility as JSON.
   screenshot     Save the current screen as a local PNG.
@@ -22,6 +23,8 @@ Commands:
 
 Connection flags must precede the command; command flags follow it.
 Set --host or REMARKABLE_HOST to a tablet IP address or SSH host alias.
+Set --port or REMARKABLE_PORT for a nonstandard SSH port (default 22).
+Explicit flags override environment defaults. Empty variables use defaults.
 SSH requires a trusted host key and passwordless public-key authentication.
 Install the helper once, and again after rebuilding it. Each operation runs
 the helper briefly; no daemon is installed.
@@ -36,7 +39,7 @@ Examples:
   remarkablectl --host 192.168.0.113 info
   remarkablectl --host 192.168.0.113 screenshot --output screen.png
 
-Connection flags:
+Global flags:
 `
 
 const inputHelp = `
@@ -51,6 +54,16 @@ completion, errors, and handled termination signals. Success produces no output.
 `
 
 var commandHelp = map[string]string{
+	"version": `Show the local CLI version and Git commit to stdout.
+
+Usage: remarkablectl version
+       remarkablectl --version
+
+Works without a host or tablet connection, even if REMARKABLE_HOST is set.
+Use remarkablectl [connection flags] info to see the installed tablet helper's
+agent_version and agent_commit fields. The firmware field is the tablet OS
+version; protocol is the helper protocol version.
+`,
 	"pinch": `Spread or close two fingers around a fixed center to request zoom.
 
 Usage: remarkablectl [connection flags] pinch --center X,Y --start-distance PX --end-distance PX [--duration 600ms]
@@ -109,8 +122,10 @@ Example:
 
 Usage: remarkablectl [connection flags] info
 
-Requires an installed helper. Reports protocol version (currently 1), model,
-firmware, and architecture. The backend field identifies the supported capture
+Requires an installed helper. Reports agent_version and agent_commit for the
+installed helper, protocol version (currently 1), model, firmware, and
+architecture. Helpers predating v0.2 omit the agent version fields.
+The backend field identifies the supported capture
 implementation; width and height describe its screen dimensions. Capture and
 input currently use the same device compatibility check. An omitted backend
 means these operations are unsupported; info can still succeed.

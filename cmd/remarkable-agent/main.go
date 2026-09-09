@@ -7,12 +7,17 @@ import (
 	"image/png"
 	"os"
 	"os/signal"
+	"remarkable-cli/internal/buildinfo"
 	"remarkable-cli/internal/capture"
 	"remarkable-cli/internal/input"
 	"syscall"
 )
 
 func run() error {
+	if len(os.Args) == 2 && (os.Args[1] == "--version" || os.Args[1] == "version") {
+		_, err := fmt.Fprintln(os.Stdout, "remarkable-agent", buildinfo.String())
+		return err
+	}
 	if len(os.Args) == 2 && isHelp(os.Args[1]) {
 		fmt.Fprint(os.Stderr, agentHelp)
 		return nil
@@ -25,7 +30,7 @@ func run() error {
 		return fmt.Errorf("unknown command %q; run remarkable-agent --help", os.Args[1])
 	}
 	if len(os.Args) != 2 {
-		return fmt.Errorf("usage: remarkable-agent <info|screenshot|tap|swipe|pinch|line|stroke>; use --help for details")
+		return fmt.Errorf("usage: remarkable-agent <version|info|screenshot|tap|swipe|pinch|line|stroke>; use --help for details")
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGHUP)
 	defer stop()

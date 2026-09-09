@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"remarkable-cli/internal/buildinfo"
 	"remarkable-cli/internal/input"
 	"strconv"
 	"strings"
@@ -49,10 +50,16 @@ func (c connection) run(ctx context.Context, remote string, in io.Reader, out, s
 func Run(args []string, stdout, stderr io.Writer) error {
 	fs := flag.NewFlagSet("remarkablectl", flag.ContinueOnError)
 	fs.SetOutput(stderr)
+	showVersion := fs.Bool("version", false, "show the local CLI version and exit")
+	portDefault := 22
+	var portEnvErr error
+	if port := os.Getenv("REMARKABLE_PORT"); port != "" {
+		portDefault, portEnvErr = strconv.Atoi(port)
+	}
 	c := connection{}
 	fs.StringVar(&c.host, "host", os.Getenv("REMARKABLE_HOST"), "tablet IP address or SSH host alias (or REMARKABLE_HOST)")
 	fs.StringVar(&c.user, "user", "root", "SSH user (capture and input require root)")
-	fs.IntVar(&c.port, "port", 22, "SSH port")
+	fs.IntVar(&c.port, "port", portDefault, "SSH port (or REMARKABLE_PORT; default 22)")
 	fs.StringVar(&c.identity, "identity", "", "SSH private key path (optional; defaults to SSH config/agent)")
 	fs.StringVar(&c.agent, "agent", "/home/root/remarkable-agent", "absolute tablet helper path; also the install-agent destination")
 	timeout := fs.Duration("timeout", 30*time.Second, "total SSH operation timeout, including gesture playback (e.g. 15s or 1m)")
@@ -64,6 +71,18 @@ func Run(args []string, stdout, stderr io.Writer) error {
 		if errors.Is(err, flag.ErrHelp) {
 			return nil
 		}
+		return err
+	}
+	fs.Visit(func(f *flag.Flag) {
+		if f.Name == "port" {
+			portEnvErr = nil // An explicit flag overrides even an invalid environment default.
+		}
+	})
+	if *showVersion {
+		if fs.NArg() != 0 {
+			return fmt.Errorf("--version takes no command or positional arguments")
+		}
+		_, err := fmt.Fprintln(stdout, "remarkablectl", buildinfo.String())
 		return err
 	}
 	if fs.NArg() == 0 {
@@ -82,8 +101,11 @@ func Run(args []string, stdout, stderr io.Writer) error {
 		if c.host == "" || strings.HasPrefix(c.host, "-") || strings.ContainsAny(c.host, " \t\r\n\x00") {
 			return fmt.Errorf("--host must be an IP address or SSH host alias")
 		}
-		if c.port < 1 || c.port > 65535 || *timeout <= 0 {
-			return fmt.Errorf("invalid port or timeout")
+		if portEnvErr != nil || c.port < 1 || c.port > 65535 {
+			return fmt.Errorf("--port or REMARKABLE_PORT must be an integer from 1 to 65535")
+		}
+		if *timeout <= 0 {
+			return fmt.Errorf("timeout must be positive")
 		}
 		if !strings.HasPrefix(c.agent, "/") || strings.ContainsAny(c.agent, "\x00\r\n") {
 			return fmt.Errorf("--agent must be an absolute remote path")
@@ -91,6 +113,18 @@ func Run(args []string, stdout, stderr io.Writer) error {
 		return nil
 	}
 	switch fs.Arg(0) {
+	case "version":
+		if err := sub.Parse(fs.Args()[1:]); err != nil {
+			if errors.Is(err, flag.ErrHelp) {
+				return nil
+			}
+			return err
+		}
+		if sub.NArg() != 0 {
+			return fmt.Errorf("version takes no positional arguments")
+		}
+		_, err := fmt.Fprintln(stdout, "remarkablectl", buildinfo.String())
+		return err
 	case "pinch":
 		center := sub.String("center", "", "required midpoint as x,y in portrait screenshot pixels")
 		startDistance := sub.Float64("start-distance", 0, "required initial finger separation in pixels (at least 20)")

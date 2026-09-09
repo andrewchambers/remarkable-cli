@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"remarkable-cli/internal/buildinfo"
 	"remarkable-cli/internal/input"
 	"strings"
 	"testing"
@@ -139,10 +140,11 @@ func TestLineCLIValidation(t *testing.T) {
 
 func TestHelpWithoutConnection(t *testing.T) {
 	t.Setenv("REMARKABLE_HOST", "")
+	t.Setenv("REMARKABLE_PORT", "invalid")
 	// No SSH executable is available: help must finish locally before validating
 	// the connection, opening an input file, or trying to run the helper.
 	t.Setenv("PATH", t.TempDir())
-	for _, command := range []string{"", "install-agent", "info", "screenshot", "tap", "swipe", "pinch", "line", "stroke"} {
+	for _, command := range []string{"", "version", "install-agent", "info", "screenshot", "tap", "swipe", "pinch", "line", "stroke"} {
 		for _, helpFlag := range []string{"-h", "--help"} {
 			args := []string{helpFlag}
 			if command != "" {
@@ -159,6 +161,65 @@ func TestHelpWithoutConnection(t *testing.T) {
 	}
 	if err := Run([]string{"info"}, io.Discard, io.Discard); err == nil || !strings.Contains(err.Error(), "--host") {
 		t.Fatalf("ordinary commands must still require a host: %v", err)
+	}
+}
+
+func TestVersionWithoutConnection(t *testing.T) {
+	t.Setenv("REMARKABLE_HOST", "unreachable-tablet")
+	t.Setenv("REMARKABLE_PORT", "invalid")
+	t.Setenv("PATH", t.TempDir())
+	for _, args := range [][]string{{"--version"}, {"version"}} {
+		var stdout, stderr bytes.Buffer
+		if err := Run(args, &stdout, &stderr); err != nil {
+			t.Fatalf("%v: %v", args, err)
+		}
+		if stdout.String() != "remarkablectl "+buildinfo.String()+"\n" || stderr.Len() != 0 {
+			t.Fatalf("%v: stdout=%q stderr=%q", args, stdout.String(), stderr.String())
+		}
+	}
+	for _, args := range [][]string{{"version", "extra"}, {"version", "--invalid"}, {"--version", "info"}} {
+		if err := Run(args, io.Discard, io.Discard); err == nil {
+			t.Fatalf("accepted %v", args)
+		}
+	}
+}
+
+func TestConnectionEnvironment(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("PATH", dir)
+	t.Setenv("REMARKABLE_HOST", "tablet-env")
+	if err := os.WriteFile(filepath.Join(dir, "ssh"), []byte("#!/bin/sh\nprintf '%s\\n' \"$@\"\n"), 0700); err != nil {
+		t.Fatal(err)
+	}
+	for _, tc := range []struct {
+		name, envPort, wantHost, wantPort string
+		flags                             []string
+	}{
+		{"environment", "2222", "tablet-env", "2222", nil},
+		{"empty port", "", "tablet-env", "22", nil},
+		{"flag overrides", "2222", "tablet-flag", "2200", []string{"--host", "tablet-flag", "--port", "2200"}},
+		{"invalid env overridden", "invalid", "tablet-env", "22", []string{"--port", "22"}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Setenv("REMARKABLE_PORT", tc.envPort)
+			var out bytes.Buffer
+			if err := Run(append(tc.flags, "info"), &out, io.Discard); err != nil {
+				t.Fatal(err)
+			}
+			if !strings.Contains(out.String(), "-p\n"+tc.wantPort+"\n") || !strings.Contains(out.String(), "--\n"+tc.wantHost+"\n") {
+				t.Fatalf("unexpected SSH arguments: %q", out.String())
+			}
+		})
+	}
+	for _, port := range []string{"invalid", "0", "-1", "65536", "999999999999999999999"} {
+		t.Setenv("REMARKABLE_PORT", port)
+		var out bytes.Buffer
+		if err := Run([]string{"info"}, &out, io.Discard); err == nil || !strings.Contains(err.Error(), "REMARKABLE_PORT") {
+			t.Fatalf("port %q: %v", port, err)
+		}
+		if out.Len() != 0 {
+			t.Fatalf("contacted SSH with invalid port %q", port)
+		}
 	}
 }
 
