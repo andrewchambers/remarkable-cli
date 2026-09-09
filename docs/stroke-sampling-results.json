@@ -1,0 +1,156 @@
+[
+  {
+    "name": "600-8-sparse-r1",
+    "duration_ms": 600,
+    "interval_ms": 8,
+    "input_points": 2,
+    "repeat": 1,
+    "elapsed_s": 1.042,
+    "mask_sha256": "87573ea04fd0bd903d477f458959cf82bafb071570cd3d891188e204dd76aeab",
+    "max_px": 0.5743590578424388,
+    "rms_px": 0.3829016333578861
+  },
+  {
+    "name": "600-8-dense-r1",
+    "duration_ms": 600,
+    "interval_ms": 8,
+    "input_points": 76,
+    "repeat": 1,
+    "elapsed_s": 1.007,
+    "mask_sha256": "87573ea04fd0bd903d477f458959cf82bafb071570cd3d891188e204dd76aeab",
+    "max_px": 0.5743590578424388,
+    "rms_px": 0.3829016333578861
+  },
+  {
+    "name": "600-4-dense-r1",
+    "duration_ms": 600,
+    "interval_ms": 4,
+    "input_points": 151,
+    "repeat": 1,
+    "elapsed_s": 1.029,
+    "mask_sha256": "5806994757086f9ef771dd169e17c838c417b77d338e1bf3303559de1d649b15",
+    "max_px": 0.528718399777207,
+    "rms_px": 0.23018083230948988
+  },
+  {
+    "name": "600-2-dense-r1",
+    "duration_ms": 600,
+    "interval_ms": 2,
+    "input_points": 301,
+    "repeat": 1,
+    "elapsed_s": 0.996,
+    "mask_sha256": "8c4c02c4df883eef1baaec50aab9d478957e3d788d5b89b3e62fe1af9c8f1816",
+    "max_px": 0.5367450175734623,
+    "rms_px": 0.11669479436278037
+  },
+  {
+    "name": "1200-8-sparse-r1",
+    "duration_ms": 1200,
+    "interval_ms": 8,
+    "input_points": 2,
+    "repeat": 1,
+    "elapsed_s": 1.588,
+    "mask_sha256": "5806994757086f9ef771dd169e17c838c417b77d338e1bf3303559de1d649b15",
+    "max_px": 0.528718399777207,
+    "rms_px": 0.23018083230948988
+  },
+  {
+    "name": "1200-4-dense-r1",
+    "duration_ms": 1200,
+    "interval_ms": 4,
+    "input_points": 301,
+    "repeat": 1,
+    "elapsed_s": 1.616,
+    "mask_sha256": "8c4c02c4df883eef1baaec50aab9d478957e3d788d5b89b3e62fe1af9c8f1816",
+    "max_px": 0.5367450175734623,
+    "rms_px": 0.11669479436278037
+  },
+  {
+    "name": "1200-2-dense-r1",
+    "duration_ms": 1200,
+    "interval_ms": 2,
+    "input_points": 601,
+    "repeat": 1,
+    "elapsed_s": 1.597,
+    "mask_sha256": "d12619e6d3d94508bf1bd1ee4b9c51ac6aa3ce962ac2dfcf0d26d331450b1c52",
+    "max_px": 0.4932872634938298,
+    "rms_px": 0.08280262854710452
+  },
+  {
+    "name": "1200-2-dense-r2",
+    "duration_ms": 1200,
+    "interval_ms": 2,
+    "input_points": 601,
+    "repeat": 2,
+    "elapsed_s": 1.6,
+    "mask_sha256": "d12619e6d3d94508bf1bd1ee4b9c51ac6aa3ce962ac2dfcf0d26d331450b1c52",
+    "max_px": 0.4932872634938298,
+    "rms_px": 0.08280262854710452
+  },
+  {
+    "name": "1200-4-dense-r2",
+    "duration_ms": 1200,
+    "interval_ms": 4,
+    "input_points": 301,
+    "repeat": 2,
+    "elapsed_s": 1.606,
+    "mask_sha256": "8c4c02c4df883eef1baaec50aab9d478957e3d788d5b89b3e62fe1af9c8f1816",
+    "max_px": 0.5367450175734623,
+    "rms_px": 0.11669479436278037
+  },
+  {
+    "name": "1200-8-sparse-r2",
+    "duration_ms": 1200,
+    "interval_ms": 8,
+    "input_points": 2,
+    "repeat": 2,
+    "elapsed_s": 1.612,
+    "mask_sha256": "5806994757086f9ef771dd169e17c838c417b77d338e1bf3303559de1d649b15",
+    "max_px": 0.528718399777207,
+    "rms_px": 0.23018083230948988
+  },
+  {
+    "name": "600-2-dense-r2",
+    "duration_ms": 600,
+    "interval_ms": 2,
+    "input_points": 301,
+    "repeat": 2,
+    "elapsed_s": 1.003,
+    "mask_sha256": "8c4c02c4df883eef1baaec50aab9d478957e3d788d5b89b3e62fe1af9c8f1816",
+    "max_px": 0.5367450175734623,
+    "rms_px": 0.11669479436278037
+  },
+  {
+    "name": "600-4-dense-r2",
+    "duration_ms": 600,
+    "interval_ms": 4,
+    "input_points": 151,
+    "repeat": 2,
+    "elapsed_s": 0.992,
+    "mask_sha256": "5806994757086f9ef771dd169e17c838c417b77d338e1bf3303559de1d649b15",
+    "max_px": 0.528718399777207,
+    "rms_px": 0.23018083230948988
+  },
+  {
+    "name": "600-8-dense-r2",
+    "duration_ms": 600,
+    "interval_ms": 8,
+    "input_points": 76,
+    "repeat": 2,
+    "elapsed_s": 1.028,
+    "mask_sha256": "87573ea04fd0bd903d477f458959cf82bafb071570cd3d891188e204dd76aeab",
+    "max_px": 0.5743590578424388,
+    "rms_px": 0.3829016333578861
+  },
+  {
+    "name": "600-8-sparse-r2",
+    "duration_ms": 600,
+    "interval_ms": 8,
+    "input_points": 2,
+    "repeat": 2,
+    "elapsed_s": 1.239,
+    "mask_sha256": "87573ea04fd0bd903d477f458959cf82bafb071570cd3d891188e204dd76aeab",
+    "max_px": 0.5743590578424388,
+    "rms_px": 0.3829016333578861
+  }
+]
